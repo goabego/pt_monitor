@@ -10,6 +10,18 @@ This script (`monitor.py`) queries the Google Cloud Monitoring API to fetch and 
 *   The **AI Platform (Vertex AI) API** and **Cloud Monitoring API** must be enabled for your project.
 *   The `gcloud` CLI installed and configured on your machine.
 
+### Endpoints that can be useful
+These docs cover what endpoints you can trigger that translate to what you see in the UI in the monitoring tool on GCP console
+https://cloud.google.com/monitoring/api/metrics_gcp_a_b#gcp-aiplatform
+
+*    publisher/online_serving/consumed_token_throughput
+*    publisher/online_serving/consumed_throughput
+*    publisher/online_serving/dedicated_gsu_limit
+*    publisher/online_serving/dedicated_gsu_project_max_limit
+
+These doc is the actual endpoint you trigger 
+https://cloud.google.com/monitoring/api/resources#tag_aiplatform.googleapis.com/PublisherModel
+
 ## Setup
 
 Follow these steps to set up your environment and run the script.
