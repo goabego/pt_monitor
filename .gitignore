@@ -12,3 +12,7 @@ env.bak/
 .idea/
 .vscode/
 .DS_Store
+output.md
+output.csv
+output.json
+output/*

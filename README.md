@@ -1,6 +1,13 @@
-# Google Cloud AI Platform Token Usage Monitor
+# Google Cloud AI Platform Metrics Monitor
 
-This script (`monitor.py`) queries the Google Cloud Monitoring API to fetch and display the daily consumed token throughput for AI Platform models. It aggregates the data by day, project, location, endpoint, deployed model, and request type, then prints a summary table to the console.
+This script (`monitor.py`) queries the Google Cloud Monitoring API to fetch and display daily usage and performance metrics for AI Platform models. It is a command-line tool that allows you to query various metrics, aggregate the data by day, and output the results in different formats.
+
+## Features
+
+*   **Multiple Metrics:** Query a wide range of metrics, including token throughput, invocation counts, latencies, and more.
+*   **Flexible Time Ranges:** Specify custom time ranges for your queries.
+*   **Multiple Output Formats:** Get your data in Markdown, CSV, or JSON format.
+*   **Robust and Extensible:** The codebase is structured with best practices, making it easy to add new metric configurations.
 
 ## Prerequisites
 
@@ -10,21 +17,7 @@ This script (`monitor.py`) queries the Google Cloud Monitoring API to fetch and 
 *   The **AI Platform (Vertex AI) API** and **Cloud Monitoring API** must be enabled for your project.
 *   The `gcloud` CLI installed and configured on your machine.
 
-### Endpoints that can be useful
-These docs cover what endpoints you can trigger that translate to what you see in the UI in the monitoring tool on GCP console
-https://cloud.google.com/monitoring/api/metrics_gcp_a_b#gcp-aiplatform
-
-*    publisher/online_serving/consumed_token_throughput
-*    publisher/online_serving/consumed_throughput
-*    publisher/online_serving/dedicated_gsu_limit
-*    publisher/online_serving/dedicated_gsu_project_max_limit
-
-These doc is the actual endpoint you trigger 
-https://cloud.google.com/monitoring/api/resources#tag_aiplatform.googleapis.com/PublisherModel
-
 ## Setup
-
-Follow these steps to set up your environment and run the script.
 
 ### 1. Create a Virtual Environment
 
@@ -42,7 +35,7 @@ python -m venv venv
 
 ### 2. Install Dependencies
 
-The required Python packages are listed in `requirements.txt`. Install them using pip:
+The required Python packages are listed in `requirements.txt`. Install them using `pip`:
 
 ```bash
 pip install -r requirements.txt
@@ -51,22 +44,20 @@ pip install -r requirements.txt
 This will install the following libraries:
 *   `google-cloud-monitoring`: The client library for the Google Cloud Monitoring API.
 *   `pandas`: For data manipulation and creating the DataFrame.
-*   `tabulate`: Used by pandas to generate the markdown-formatted table for printing.
+*   `tabulate`: Used by pandas to generate the markdown-formatted table.
 
 ### 3. Google Cloud Authentication
 
-This script uses Application Default Credentials (ADC) to authenticate with Google Cloud. The easiest way to set this up for local development is to use the `gcloud` CLI.
+This script uses Application Default Credentials (ADC) to authenticate with Google Cloud. The easiest way to set this up for local development is with the `gcloud` CLI.
 
 1.  **Log in with gcloud:**
-
     ```bash
     gcloud auth application-default login
     ```
-
-    This command will open a browser window for you to log in to your Google account and grant the necessary permissions.
+    This command will open a browser window for you to log in and grant the necessary permissions.
 
 2.  **Set your project:**
-    Make sure your gcloud CLI is configured to use the correct project.
+    Make sure your `gcloud` CLI is configured to use the correct project.
     ```bash
     gcloud config set project YOUR_PROJECT_ID
     ```
@@ -76,48 +67,43 @@ This script uses Application Default Credentials (ADC) to authenticate with Goog
 
 ## Running the Script
 
-### 1. Configure the Project ID
+The script is run from the command line and accepts several arguments to customize the query.
 
-Before running, you must edit `monitor.py` and set the `PROJECT_ID` variable to your Google Cloud project ID.
+### Basic Usage
 
-Find this line near the bottom of the script:
-```python
-# /home/admin_/monitor.py
-
-PROJECT_ID = "agent-starter-pack-spend" 
-```
-
-Replace `"agent-starter-pack-spend"` with your actual project ID.
-
-### 2. Execute the Script
-
-With your virtual environment activated, run the script from your terminal:
+To query a specific metric, you must provide your project ID and the metric name.
 
 ```bash
-python monitor.py
+python monitor.py --project-id YOUR_PROJECT_ID --metric consumed_token_throughput
 ```
 
-The script will print the status of the query and then display a markdown table with the daily token usage data.
+### Query All Metrics
 
-## Output
+You can query all available metrics sequentially using the `--all-metrics` flag.
 
-The output is a table showing the daily consumed tokens, broken down by date, project, location, endpoint, deployed model, and request type.
-
-Example:
-*Note:* 1st party models model_version_id not avaliable
-
+```bash
+python monitor.py --project-id YOUR_PROJECT_ID --all-metrics
 ```
-| date       | resource_container       | location    | publisher   | model_version_id   | model_user_id    | request_type   |   consumed_tokens |
-|:-----------|:-------------------------|:------------|:------------|:-------------------|:-----------------|:---------------|------------------:|
-| 2025-08-05 | sample_project_pt_monitor | us-central1 | google      |                    | gemini-2.5-flash | shared         |            150368 |
-| 2025-08-05 | sample_project_pt_monitor | us-central1 | google      |                    | gemini-2.5-pro   | shared         |             22458 |
-| 2025-08-06 | sample_project_pt_monitor | us-central1 | google      |                    | gemini-2.5-flash | shared         |             51762 |
-| 2025-08-10 | sample_project_pt_monitor | us-central1 | google      |                    | gemini-2.5-flash | shared         |             91452 |
-| 2025-08-11 | sample_project_pt_monitor | us-central1 | google      |                    | gemini-2.5-flash | shared         |            157257 |
-| 2025-08-12 | sample_project_pt_monitor | us-central1 | google      |                    | gemini-2.5-flash | shared         |             17844 |
-| 2025-10-16 | sample_project_pt_monitor | global      | google      |                    | gemini-2.5-pro   | shared         |              1349 |
-| 2025-10-27 | sample_project_pt_monitor | global      | google      |                    | gemini-2.5-flash | shared         |           1079936 |
-| 2025-10-27 | sample_project_pt_monitor | us-central1 | google      |                    | gemini-2.5-flash | shared         |                 0 |
-| 2025-10-28 | sample_project_pt_monitor | global      | google      |                    | gemini-2.5-flash | shared         |             21857 |
-...
-```
+
+### Command-Line Arguments
+
+| Argument           | Required | Description                                                                  |
+| ------------------ | -------- | ---------------------------------------------------------------------------- |
+| `--project-id`     | **Yes**  | Your Google Cloud Project ID.                                                |
+| `--metric`         | **Yes*** | The metric to query (e.g., `consumed_token_throughput`).                     |
+| `--all-metrics`    | **Yes*** | Query all available metrics sequentially.                                    |
+| `--days-ago-start` | No       | The start of the time window in days from now. Default: `90`.                |
+| `--days-ago-end`   | No       | The end of the time window in days from now (0 is 'now'). Default: `0`.      |
+| `--output`         | No       | The output format for the results (`markdown`, `csv`, `json`). Default: `markdown`. |
+
+*\*Note: You must specify either `--metric` or `--all-metrics`, but not both.*
+
+### Available Metrics
+
+You can find a full list of available metrics in the `METRIC_CONFIGS` dictionary inside the `metric_configs.py` file.
+
+## Sample Output
+
+The output is a table showing the daily data for the requested metric, broken down by relevant labels.
+
+See [`sample.md`](./sample.md) for a more detailed example of the output when running with the `--all-metrics` flag.
