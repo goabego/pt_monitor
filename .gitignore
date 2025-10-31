@@ -12,6 +12,8 @@ env.bak/
 .idea/
 .vscode/
 .DS_Store
+
+# Output files
 output.md
 output.csv
 output.json
