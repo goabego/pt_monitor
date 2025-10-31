@@ -104,9 +104,20 @@ The script will print the status of the query and then display a markdown table 
 The output is a table showing the daily consumed tokens, broken down by date, project, location, endpoint, deployed model, and request type.
 
 Example:
+*Note:* 1st party models model_version_id not avaliable
+
 ```
-| date       | resource_container       | location    | endpoint_id   | deployed_model_id   | request_type   |   consumed_tokens |
-|:-----------|:-------------------------|:------------|:--------------|:--------------------|:---------------|------------------:|
-| 2025-08-04 | my-gcp-project           | us-central1 | 123456789...  | 987654321...        | shared         |             28133 |
+| date       | resource_container       | location    | publisher   | model_version_id   | model_user_id    | request_type   |   consumed_tokens |
+|:-----------|:-------------------------|:------------|:------------|:-------------------|:-----------------|:---------------|------------------:|
+| 2025-08-05 | sample_project_pt_monitor | us-central1 | google      |                    | gemini-2.5-flash | shared         |            150368 |
+| 2025-08-05 | sample_project_pt_monitor | us-central1 | google      |                    | gemini-2.5-pro   | shared         |             22458 |
+| 2025-08-06 | sample_project_pt_monitor | us-central1 | google      |                    | gemini-2.5-flash | shared         |             51762 |
+| 2025-08-10 | sample_project_pt_monitor | us-central1 | google      |                    | gemini-2.5-flash | shared         |             91452 |
+| 2025-08-11 | sample_project_pt_monitor | us-central1 | google      |                    | gemini-2.5-flash | shared         |            157257 |
+| 2025-08-12 | sample_project_pt_monitor | us-central1 | google      |                    | gemini-2.5-flash | shared         |             17844 |
+| 2025-10-16 | sample_project_pt_monitor | global      | google      |                    | gemini-2.5-pro   | shared         |              1349 |
+| 2025-10-27 | sample_project_pt_monitor | global      | google      |                    | gemini-2.5-flash | shared         |           1079936 |
+| 2025-10-27 | sample_project_pt_monitor | us-central1 | google      |                    | gemini-2.5-flash | shared         |                 0 |
+| 2025-10-28 | sample_project_pt_monitor | global      | google      |                    | gemini-2.5-flash | shared         |             21857 |
 ...
 ```

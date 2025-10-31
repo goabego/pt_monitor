@@ -116,8 +116,7 @@ def get_daily_token_throughput(project_id: str, days_ago_start: int = 90, days_a
     df = pd.DataFrame(data)
     
     grouping_cols = [
-        "date", "resource_container", "location", 
-        "model_version_id", "model_user_id", "request_type"
+        "date", "resource_container", "location", "publisher", "model_version_id", "model_user_id", "request_type"
     ]
 
     # Group by date, model, and request type to get a detailed daily breakdown.
