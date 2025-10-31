@@ -3,7 +3,7 @@ from google.cloud import monitoring_v3
 from google.protobuf import duration_pb2
 import pandas as pd
 
-def get_daily_token_throughput(project_id: str, days_ago_start: int = 365, days_ago_end: int = 0) -> pd.DataFrame:
+def get_daily_token_throughput(project_id: str, days_ago_start: int = 90, days_ago_end: int = 0) -> pd.DataFrame:
     """
     Retrieves the daily consumed token throughput for the PublisherModel resource 
     over a specified time period.
@@ -53,8 +53,9 @@ def get_daily_token_throughput(project_id: str, days_ago_start: int = 365, days_
         group_by_fields=[
             'resource.label.project_id',
             'resource.label.location',
-            'resource.label.endpoint_id',
-            'resource.label.deployed_model_id',
+            'resource.label.publisher',
+            'resource.label.model_version_id',
+            'resource.label.model_user_id',
             'metric.label.request_type'
         ],
     )
@@ -73,15 +74,20 @@ def get_daily_token_throughput(project_id: str, days_ago_start: int = 365, days_
     results = client.list_time_series(request=request)
     
     # 5. Process and Format Results
+    # resource_container: The identifier of the GCP Project owning the Endpoint.
+    # location: The region in which the service is running.
+    # publisher: The publisher of the model.
+    # model_user_id: The resource ID of the PublisherModel.
+    # model_version_id: The version ID of the PublisherModel.
     data = []
     for time_series in results:
         # Extract labels for grouping
         resource_labels = time_series.resource.labels
         resource_container = resource_labels.get("project_id", "N/A")
         location = resource_labels.get("location", "N/A")
-        endpoint_id = resource_labels.get("endpoint_id", "N/A")
-        deployed_model_id = resource_labels.get("deployed_model_id", "N/A")
-
+        publisher = resource_labels.get("publisher", "N/A")
+        model_user_id = resource_labels.get("model_user_id", "N/A")
+        model_version_id = resource_labels.get("model_version_id", "N/A")
         request_type = time_series.metric.labels.get("request_type", "N/A")
         
         # Each point is a daily aggregate
@@ -96,21 +102,22 @@ def get_daily_token_throughput(project_id: str, days_ago_start: int = 365, days_
                 "date": date,
                 "resource_container": resource_container,
                 "location": location,
-                "endpoint_id": endpoint_id,
-                "deployed_model_id": deployed_model_id,
+                "publisher": publisher,
+                "model_version_id": model_version_id,
+                "model_user_id": model_user_id,
                 "request_type": request_type,
                 "consumed_tokens": value
             })
 
     if not data:
         print("No data found for the specified period.")
-        return pd.DataFrame(columns=["date", "resource_container", "location", "endpoint_id", "deployed_model_id", "request_type", "consumed_tokens"])
+        return pd.DataFrame(columns=["date", "resource_container", "location", "publisher", "model_version_id", "model_user_id", "request_type", "consumed_tokens"])
 
     df = pd.DataFrame(data)
     
     grouping_cols = [
         "date", "resource_container", "location", 
-        "endpoint_id", "deployed_model_id", "request_type"
+        "model_version_id", "model_user_id", "request_type"
     ]
 
     # Group by date, model, and request type to get a detailed daily breakdown.
@@ -128,10 +135,9 @@ PROJECT_ID = "agent-starter-pack-spend"
 if PROJECT_ID == "YOUR_PROJECT_ID":
     print("!!! ERROR: Please replace 'YOUR_PROJECT_ID' with your actual Project ID to run the code.")
 else:
-    # Default: Last 30 days to now
+    # Default: Last 90 days to now
     usage_data = get_daily_token_throughput(PROJECT_ID)
     
-    print("\n--- Daily Consumed Token Usage (per model and request type) ---")
     print(usage_data.to_markdown(index=False))
 
     # Example: Custom 7-day range (e.g., 10 days ago to 3 days ago)
