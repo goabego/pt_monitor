@@ -2,6 +2,7 @@ import argparse
 import datetime
 import logging
 from google.api_core import exceptions
+import google.auth
 from google.cloud import monitoring_v3
 from google.protobuf import duration_pb2
 import pandas as pd
@@ -14,6 +15,27 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S"
 )
+
+def log_authentication_method():
+    """
+    Determines and logs the authentication method being used by the Google Cloud client library.
+    """
+    try:
+        credentials, project_id = google.auth.default()
+        auth_type = "Unknown"
+        
+        if hasattr(credentials, 'service_account_email'):
+            auth_type = f"Service Account: {credentials.service_account_email}"
+        elif hasattr(credentials, 'id_token'):
+             auth_type = f"User Credentials" # User credentials don't expose the email directly
+        
+        logging.info(f"Authentication successful. Using credentials of type: {auth_type}")
+
+    except exceptions.DefaultCredentialsError:
+        logging.error("Authentication failed. Could not find default credentials.")
+        logging.error("Please run 'gcloud auth application-default login' or set the GOOGLE_APPLICATION_CREDENTIALS environment variable.")
+    except Exception as e:
+        logging.error(f"An unexpected error occurred during authentication: {e}")
 
 def query_metric(
     project_id: str,
@@ -117,6 +139,9 @@ def query_metric(
     return pd.DataFrame()
 
 def main():
+    # First, log the authentication method being used.
+    log_authentication_method()
+
     parser = argparse.ArgumentParser(description="Google Cloud AI Platform Token Usage Monitor.")
     parser.add_argument(
         "--project-id", type=str, required=True, help="Your Google Cloud Project ID."
