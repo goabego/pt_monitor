@@ -18,3 +18,5 @@ output.md
 output.csv
 output.json
 output/*
+
+*.png

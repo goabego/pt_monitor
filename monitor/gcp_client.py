@@ -1,20 +1,12 @@
-import argparse
 import datetime
 import logging
-from google.api_core import exceptions
 import google.auth
+from google.api_core import exceptions
 from google.cloud import monitoring_v3
 from google.protobuf import duration_pb2
 import pandas as pd
 
-from metric_configs import METRIC_CONFIGS, MetricConfig
-
-# --- Setup Logging ---
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
-)
+from .config.models import MetricConfig
 
 def log_authentication_method():
     """
@@ -45,15 +37,6 @@ def query_metric(
 ) -> pd.DataFrame:
     """
     Retrieves and processes a specified metric from Google Cloud Monitoring.
-
-    Args:
-        project_id: Your Google Cloud Project ID.
-        metric_config: A MetricConfig object with the metric's configuration.
-        days_ago_start: The start of the time window in days from now.
-        days_ago_end: The end of the time window in days from now (0 is 'now').
-
-    Returns:
-        A pandas DataFrame with the queried metric data.
     """
     try:
         client = monitoring_v3.MetricServiceClient()
@@ -69,7 +52,7 @@ def query_metric(
         metric_filter = f'metric.type = "{metric_config.metric_type}"'
 
         # 3. Define Aggregation
-        ONE_DAY_S = 86400  # 1 day in seconds
+        ONE_DAY_S = 86400
         
         resource_labels = [
             'resource.label.project_id', 'resource.label.location',
@@ -137,78 +120,3 @@ def query_metric(
         logging.error(f"An unexpected error occurred: {e}")
     
     return pd.DataFrame()
-
-def main():
-    # First, log the authentication method being used.
-    log_authentication_method()
-
-    parser = argparse.ArgumentParser(description="Google Cloud AI Platform Token Usage Monitor.")
-    parser.add_argument(
-        "--project-id", type=str, required=True, help="Your Google Cloud Project ID."
-    )
-    parser.add_argument(
-        "--metric", type=str, choices=list(METRIC_CONFIGS.keys()),
-        help="The metric to query. Required if --all-metrics is not specified."
-    )
-    parser.add_argument(
-        "--all-metrics", action="store_true", help="Query all available metrics sequentially."
-    )
-    parser.add_argument(
-        "--days-ago-start", type=int, default=90,
-        help="The start of the time window, in days from the current time."
-    )
-    parser.add_argument(
-        "--days-ago-end", type=int, default=0,
-        help="The end of the time window, in days from the current time (0 means 'now')."
-    )
-    parser.add_argument(
-        "--output", type=str, default="markdown", choices=["markdown", "csv", "json"],
-        help="The output format for the results."
-    )
-
-    args = parser.parse_args()
-
-    if not args.metric and not args.all_metrics:
-        parser.error("Either --metric or --all-metrics must be specified.")
-    
-    if args.metric and args.all_metrics:
-        parser.error("Specify either --metric or --all-metrics, not both.")
-
-    def print_data(data, output_format):
-        if data.empty:
-            return
-        if output_format == "markdown":
-            print(data.to_markdown(index=False))
-        elif output_format == "csv":
-            print(data.to_csv(index=False))
-        elif output_format == "json":
-            print(data.to_json(orient="records", indent=2))
-
-    if args.all_metrics:
-        for metric_name, metric_config in METRIC_CONFIGS.items():
-            logging.info(f"--- Querying Metric: {metric_name} ---")
-            usage_data = query_metric(
-                project_id=args.project_id,
-                metric_config=metric_config,
-                days_ago_start=args.days_ago_start,
-                days_ago_end=args.days_ago_end,
-            )
-            
-            # Add a header to the data output for clarity
-            if not usage_data.empty:
-                print(f"\n--- Metric: {metric_name} ---")
-                print_data(usage_data, args.output)
-            
-            logging.info(f"--- End of Metric: {metric_name} ---")
-    else:
-        metric_config = METRIC_CONFIGS[args.metric]
-        usage_data = query_metric(
-            project_id=args.project_id,
-            metric_config=metric_config,
-            days_ago_start=args.days_ago_start,
-            days_ago_end=args.days_ago_end,
-        )
-        print_data(usage_data, args.output)
-
-if __name__ == "__main__":
-    main()

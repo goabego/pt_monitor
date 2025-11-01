@@ -109,22 +109,36 @@ A service account is a special type of Google account intended to represent a no
 
 ## Running the Script
 
-The script is run from the command line and accepts several arguments to customize the query.
+Because the project is structured as a Python package, you must run it as a module from the root directory of the project.
 
 ### Basic Usage
 
-To query a specific metric, you must provide your project ID and the metric name.
+To query a specific metric, provide your project ID and the metric name:
 
 ```bash
-python monitor.py --project-id YOUR_PROJECT_ID --metric consumed_token_throughput
+python -m monitor.main --project-id YOUR_PROJECT_ID --metric consumed_token_throughput
 ```
 
 ### Query All Metrics
 
-You can query all available metrics sequentially using the `--all-metrics` flag.
+To query all available metrics sequentially, use the `--all-metrics` flag:
 
 ```bash
-python monitor.py --project-id YOUR_PROJECT_ID --all-metrics
+python -m monitor.main --project-id YOUR_PROJECT_ID --all-metrics
+```
+
+### Generating Charts
+
+To generate a chart for a single metric, use the `--generate-graph` flag. You can also specify one or more columns to group the data by.
+
+```bash
+# Generate a time-series chart for 'consumed_token_throughput' grouped by 'model_user_id'
+python -m monitor.main --project-id YOUR_PROJECT_ID --metric consumed_token_throughput --generate-graph --graph-group-by model_user_id
+```
+
+To generate the standard report of 6 charts, use the `--generate-report-charts` flag:
+```bash
+python -m monitor.main --project-id YOUR_PROJECT_ID --generate-report-charts
 ```
 
 ### Command-Line Arguments

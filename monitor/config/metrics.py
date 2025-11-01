@@ -1,18 +1,4 @@
-from dataclasses import dataclass, field
-from typing import List, Optional
-
-@dataclass
-class MetricConfig:
-    """
-    A data model for defining a Google Cloud Monitoring metric configuration.
-    """
-    name: str
-    metric_type: str
-    value_field: str
-    value_name: str
-    metric_labels: List[str] = field(default_factory=list)
-    aligner: str = "ALIGN_DELTA"
-    reducer: str = "REDUCE_SUM"
+from .models import MetricConfig
 
 # A dictionary mapping a friendly name to its MetricConfig object.
 METRIC_CONFIGS = {
