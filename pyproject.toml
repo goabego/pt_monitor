@@ -1,0 +1,20 @@
+[project]
+name = "pt_monitor"
+version = "0.1.0"
+description = "A project for monitoring."
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "google-cloud-monitoring",
+    "google-cloud-logging",
+    "pandas",
+    "matplotlib",
+    "tabulate",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.uv]

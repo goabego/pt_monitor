@@ -25,34 +25,20 @@ This script queries the Google Cloud Monitoring API to fetch metrics, display th
 
 ## Prerequisites
 
-*   Python 3.8+
-*   `pip` (Python package installer)
+*   Python 3.9+
+*   `uv` (Python package installer and dependency manager)
 *   Access to a Google Cloud project.
 *   The **AI Platform (Vertex AI) API** and **Cloud Monitoring API** must be enabled for your project.
 *   The `gcloud` CLI installed and configured on your machine.
 
 ## Setup
 
-### 1. Create a Virtual Environment
+### 1. Install Dependencies
 
-It is highly recommended to use a virtual environment to keep dependencies isolated.
-
-```bash
-# For Linux and macOS
-python3 -m venv venv
-source venv/bin/activate
-
-# For Windows
-python -m venv venv
-.\venv\Scripts\activate
-```
-
-### 2. Install Dependencies
-
-The required Python packages are listed in `requirements.txt`. Install them using `pip`:
+The required Python packages are listed in `pyproject.toml`. Install them using `uv`:
 
 ```bash
-pip install -r requirements.txt
+uv pip install
 ```
 
 ## Authentication and Authorization
@@ -94,28 +80,23 @@ Because the project is structured as a Python package, you must run it as a modu
 
 *   **Query a single metric:**
     ```bash
-    python -m monitor.main --project-id YOUR_PROJECT_ID --metric consumed_token_throughput
-    ```
-*   **Query all metrics:**
+    uv run python -m monitor.main --project-id YOUR_PROJECT_ID --metric consumed_token_throughput
+    ```*   **Query all metrics:**
     ```bash
-    python -m monitor.main --project-id YOUR_PROJECT_ID --all-metrics
+    uv run python -m monitor.main --project-id YOUR_PROJECT_ID --all-metrics
     ```
-
 ### Chart Generation Examples
 
 *   **Generate a standard report of 6 key charts:**
     ```bash
-    python -m monitor.main --project-id YOUR_PROJECT_ID --generate-report-charts
-    ```
-*   **Generate a report filtered by a specific model:**
+    uv run python -m monitor.main --project-id YOUR_PROJECT_ID --generate-report-charts
+    ```*   **Generate a report filtered by a specific model:**
     ```bash
-    python -m monitor.main --project-id YOUR_PROJECT_ID --generate-report-charts --filter-model-id gemini-1.5-pro
-    ```
-*   **Generate a custom chart for a single metric, grouped by model:**
+    uv run python -m monitor.main --project-id YOUR_PROJECT_ID --generate-report-charts --filter-model-id gemini-1.5-pro
+    ```*   **Generate a custom chart for a single metric, grouped by model:**
     ```bash
-    python -m monitor.main --project-id YOUR_PROJECT_ID --metric consumed_token_throughput --generate-graph --graph-group-by model_user_id
+    uv run python -m monitor.main --project-id YOUR_PROJECT_ID --metric consumed_token_throughput --generate-graph --graph-group-by model_user_id
     ```
-
 ### Command-Line Arguments
 
 | Argument                     | Description                                                                                             | Used With                               |

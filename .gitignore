@@ -1,5 +1,5 @@
-venv/*
 venv/
+.venv/
 __pycache__/
 *.pyc
 *.pyo
@@ -8,10 +8,10 @@ __pycache__/
 env/
 env.bak/
 *.env
-*.venv
 .idea/
 .vscode/
 .DS_Store
+pt_monitor.egg-info/
 
 # Output files
 output.md

@@ -1,6 +1,0 @@
-google-cloud-monitoring
-pandas
-tabulate
-matplotlib
-numpy
-pydantic
