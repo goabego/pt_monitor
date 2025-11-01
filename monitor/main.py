@@ -13,7 +13,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 
-def generate_report_charts(project_id, days_ago_start, days_ago_end, filter_model_id=None):
+def generate_report_charts(project_id, days_ago_start, days_ago_end, filter_model_id, metrics_with_data, metrics_without_data):
     """
     Generates a standard set of charts for key metrics.
     """
@@ -43,6 +43,7 @@ def generate_report_charts(project_id, days_ago_start, days_ago_end, filter_mode
         )
 
         if usage_data.empty:
+            metrics_without_data.append(metric_name)
             logging.warning(f"No data returned for {metric_name}. Skipping chart generation.")
             continue
 
@@ -51,9 +52,11 @@ def generate_report_charts(project_id, days_ago_start, days_ago_end, filter_mode
             usage_data = usage_data[usage_data['model_user_id'] == filter_model_id]
             logging.info(f"Filtered by model_user_id '{filter_model_id}'. Kept {len(usage_data)} of {original_rows} rows.")
             if usage_data.empty:
+                metrics_without_data.append(metric_name)
                 logging.warning(f"No data remains for {metric_name} after filtering. Skipping chart generation.")
                 continue
         
+        metrics_with_data.append(metric_name)
         generate_chart(usage_data, metric_config.name, metric_config.value_name, group_by_cols)
 
     logging.info("--- Standard Chart Generation Complete ---")
@@ -125,12 +128,17 @@ def main():
         elif output_format == "json":
             print(data.to_json(orient="records", indent=2))
 
+    metrics_with_data = []
+    metrics_without_data = []
+
     if args.generate_report_charts:
         generate_report_charts(
             project_id=args.project_id,
             days_ago_start=args.days_ago_start,
             days_ago_end=args.days_ago_end,
-            filter_model_id=args.filter_model_id
+            filter_model_id=args.filter_model_id,
+            metrics_with_data=metrics_with_data,
+            metrics_without_data=metrics_without_data
         )
     elif args.all_metrics:
         for metric_name, metric_config in METRIC_CONFIGS.items():
@@ -143,8 +151,11 @@ def main():
             )
             
             if not usage_data.empty:
+                metrics_with_data.append(metric_name)
                 print(f"\n--- Metric: {metric_name} ---")
                 print_data(usage_data, args.output)
+            else:
+                metrics_without_data.append(metric_name)
             
             logging.info(f"--- End of Metric: {metric_name} ---")
     elif args.metric:
@@ -155,11 +166,29 @@ def main():
             days_ago_start=args.days_ago_start,
             days_ago_end=args.days_ago_end,
         )
-        print_data(usage_data, args.output)
+        
+        if not usage_data.empty:
+            metrics_with_data.append(args.metric)
+            print_data(usage_data, args.output)
+        else:
+            metrics_without_data.append(args.metric)
 
         if args.generate_graph:
             group_by_cols = args.graph_group_by.split(',') if args.graph_group_by else []
             generate_chart(usage_data, metric_config.name, metric_config.value_name, group_by_cols)
+
+    # --- Final Summary ---
+    if len(metrics_with_data) + len(metrics_without_data) > 1:
+        logging.info("\n\n--- Query Summary ---")
+        if metrics_with_data:
+            logging.info("Metrics with data found:")
+            for metric in sorted(metrics_with_data):
+                logging.info(f"  - {metric}")
+        if metrics_without_data:
+            logging.info("Metrics with no data:")
+            for metric in sorted(metrics_without_data):
+                logging.info(f"  - {metric}")
+        logging.info("--- End of Summary ---")
 
 if __name__ == "__main__":
     main()

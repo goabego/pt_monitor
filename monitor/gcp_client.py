@@ -106,10 +106,35 @@ def query_metric(
             return pd.DataFrame()
 
         df = pd.DataFrame(data)
-        grouping_cols = sorted([col for col in df.columns if col != metric_config.value_name and col != 'date'])
-        all_cols = ["date"] + grouping_cols + [metric_config.value_name]
-        df = df[all_cols]
-        return df.sort_values(by=["date"] + grouping_cols).reset_index(drop=True)
+        
+        # Define the desired fixed order for the initial columns
+        preferred_order = ['date', 'location', 'project_id', 'model_user_id', 'model_version_id']
+        
+        # Get all columns from the DataFrame
+        all_cols = df.columns.tolist()
+        
+        # Start the final order with preferred columns that exist in the DataFrame
+        final_ordered_cols = [col for col in preferred_order if col in all_cols]
+        
+        # Get the remaining label columns (not preferred, not the value column)
+        value_col = metric_config.value_name
+        remaining_labels = [
+            col for col in all_cols 
+            if col not in final_ordered_cols and col != value_col
+        ]
+        remaining_labels.sort() # Sort the rest alphabetically for consistency
+        
+        # Combine the lists to get the final column order
+        final_ordered_cols.extend(remaining_labels)
+        final_ordered_cols.append(value_col)
+        
+        # Reorder the DataFrame
+        df = df[final_ordered_cols]
+        
+        # Define sorting order, respecting the new visual hierarchy
+        sorting_cols = [col for col in preferred_order if col in df.columns]
+        
+        return df.sort_values(by=sorting_cols).reset_index(drop=True)
 
     except exceptions.PermissionDenied as e:
         logging.error(f"Permission denied for project '{project_id}'. Check your authentication and IAM roles.")
