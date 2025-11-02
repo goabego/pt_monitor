@@ -12,6 +12,7 @@ env.bak/
 .vscode/
 .DS_Store
 pt_monitor.egg-info/
+*.egg-info/
 
 # Output files
 output.md
