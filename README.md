@@ -38,7 +38,7 @@ This script queries the Google Cloud Monitoring API to fetch metrics, display th
 The required Python packages are listed in `pyproject.toml`. Install them using `uv`:
 
 ```bash
-uv pip install
+uv sync
 ```
 
 ## Authentication and Authorization
