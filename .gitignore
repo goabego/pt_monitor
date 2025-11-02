@@ -1,23 +1,9 @@
-venv/
-.venv/
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.pyc
-*.pyo
 *.pyd
-.Python
-env/
-env.bak/
-*.env
-.idea/
-.vscode/
-.DS_Store
-pt_monitor.egg-info/
+*.pyo
 *.egg-info/
-
-# Output files
-output.md
-output.csv
-output.json
-output/*
-
-*.png
+.pytest_cache/
+.venv/
+output.*
